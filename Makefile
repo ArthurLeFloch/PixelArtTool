@@ -14,3 +14,4 @@ project: $(OTHERS)
 
 clean:
 	rm -f *.o
+	rm -f *.ppm

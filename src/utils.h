@@ -37,4 +37,6 @@ SDL_Color get_sat_color(SDL_Point * pos, SDL_Rect * sat, HSV_Color color);
 
 void change_image_color(SDL_Point * pos, Pixel_Art * image, SDL_Color color);
 
+void save(FILE *output, Pixel_Art * pixel_art);
+
 #endif // __UTILS_H__

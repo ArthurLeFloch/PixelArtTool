@@ -8,6 +8,39 @@
 int main(int argc, char * argv[]){
 	int status = EXIT_FAILURE;
 
+    #pragma region OPTIONS
+    int width=15, height=15;
+    char *filename = "default_pixel_art.png";
+    int opt;
+
+    while((opt = getopt(argc, argv, "s:o:")) != -1){
+        switch(opt){
+            case 's':
+                if(sscanf(optarg, "%dx%d", &width, &height) != 2){
+                    fprintf(stderr, "Invalid size format\n");
+                    exit(EXIT_FAILURE);
+                }
+                printf("Width: %d \t Height: %d\n", width, height);
+                break;
+            case 'o':
+                filename = optarg;
+                break;
+            default:
+                fprintf(stderr, "Usage: %s -s <width>x<height>\n", argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+    printf("Output file: %s\n", filename);
+
+    FILE *output;
+    output = fopen(filename, "w");
+    if(output == NULL){
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    #pragma endregion
+
 	SDL_Color background_color = {10, 14, 18, 255};
     HSV_Color selected_hv = {0, 0, 0};
     SDL_Color selected_color = {0, 0, 0, 255};
@@ -42,7 +75,6 @@ int main(int argc, char * argv[]){
 	#pragma endregion
 
     #pragma region PIXEL ART INIT
-    int width = 15, height = 15;
     int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET) / (float)width, (float)(HEIGHT - OFFSET) / (float)height);
     int x_offset = ((WIDTH - P_WIDTH) - width * tile_size) / 2;
     int y_offset = (HEIGHT - height * tile_size) / 2;
@@ -91,6 +123,11 @@ int main(int argc, char * argv[]){
                         case SDLK_SPACE:
                             fill_image(&pixel_art, white);
                             break;
+                        case SDLK_s:
+                            printf("Saving pixel art to %s...\n", filename);
+                            save(output, &pixel_art);
+                            printf("Saved pixel art successfully !\n");
+                            break;
                     }
             }
 		}
@@ -108,6 +145,7 @@ int main(int argc, char * argv[]){
 
 Quit:
     free(pixel_art.image);
+    fclose(output);
     if(renderer != NULL){
         SDL_DestroyRenderer(renderer);
     }

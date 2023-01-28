@@ -91,3 +91,16 @@ void change_image_color(SDL_Point * pos, Pixel_Art * pixel_art, SDL_Color color)
 
     pixel_art->image[xc + yc*pixel_art->width] = color;
 }
+
+void save(FILE *output, Pixel_Art * pixel_art){
+    SDL_Color color;
+    fprintf(output, "P6\n%i %i 255\n", pixel_art->width, pixel_art->height);
+    for(int y=0; y<pixel_art->height; y++){
+        for(int x=0; x<pixel_art->width; x++){
+            color = pixel_art->image[x + y*pixel_art->width];
+            fputc(color.r, output);
+            fputc(color.g, output);
+            fputc(color.b, output);
+        }
+    }
+}
