@@ -9,6 +9,9 @@ int main(int argc, char * argv[]){
 	int status = EXIT_FAILURE;
 
 	SDL_Color background_color = {10, 14, 18, 255};
+    HSV_Color selected_hv = {0, 0, 0};
+    SDL_Color selected_color = {0, 0, 0, 255};
+    SDL_Color white = {255, 255, 255, 255};
 
 	#pragma region SDL INIT
 	SDL_Window * window = NULL;
@@ -22,7 +25,7 @@ int main(int argc, char * argv[]){
         goto Quit;
     }
 
-    window = SDL_CreateWindow("Test SDL", 40, 60, WIDTH, HEIGHT, 0);
+    window = SDL_CreateWindow("Pixel Art Tool", 40, 60, WIDTH, HEIGHT, 0);
     if(window == NULL){
         fprintf(stderr, "Error with SDL_CreateWindow : %s\n", SDL_GetError());
         goto Quit;
@@ -36,25 +39,25 @@ int main(int argc, char * argv[]){
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	#pragma endregion SDL INIT
+	#pragma endregion
 
-    Dimension dim = {.width=IM_WIDTH, .height=IM_HEIGHT};
-    int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET) / (float)dim.width, (float)(HEIGHT - OFFSET) / (float)dim.height);
-    int x_offset = ((WIDTH - P_WIDTH) - dim.width * tile_size) / 2;
-    int y_offset = (HEIGHT - dim.height * tile_size) / 2;
+    #pragma region PIXEL ART INIT
+    int width = 15, height = 15;
+    int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET) / (float)width, (float)(HEIGHT - OFFSET) / (float)height);
+    int x_offset = ((WIDTH - P_WIDTH) - width * tile_size) / 2;
+    int y_offset = (HEIGHT - height * tile_size) / 2;
+    SDL_Rect rect = {x_offset, y_offset, width*tile_size, height*tile_size};
 
-    HSV_Color selected_hv = {0, 0, 0};
-    SDL_Color selected_color = {0, 0, 0, 0};
-    SDL_Color white = {255, 255, 255, 255};
+    Pixel_Art pixel_art = {width, height, x_offset, y_offset, tile_size, rect, NULL};
+    pixel_art.image = malloc(sizeof(SDL_Color) * height * width);
+    fill_image(&pixel_art, white);
 
-    SDL_Color image[IM_HEIGHT][IM_WIDTH];
-    fill_image(image, white);
+    #pragma endregion
 
     SDL_Rect panel_palette_rect = {WIDTH-P_WIDTH, (HEIGHT - 200), P_WIDTH, 200};
     SDL_Rect panel_saturation_rect = {WIDTH-P_WIDTH, (HEIGHT - 200 - 60), P_WIDTH, 40};
 
-    SDL_Rect image_rect = {x_offset, y_offset, dim.width*tile_size, dim.height*tile_size};
-
+    #pragma region MAIN LOOP
     SDL_Point mouse_pos;
 	int running = 1;
 	while(running){
@@ -69,11 +72,11 @@ int main(int argc, char * argv[]){
         if(SDL_PointInRect(&mouse_pos, &panel_saturation_rect) && (mouse_state & SDL_BUTTON_LMASK)){
             selected_color = get_sat_color(&mouse_pos, &panel_saturation_rect, selected_hv);
         }
-        if(SDL_PointInRect(&mouse_pos, &image_rect)){
+        if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
             if(mouse_state & SDL_BUTTON_RMASK)
-                change_image_color(&mouse_pos, &image_rect, image, tile_size, white);
+                change_image_color(&mouse_pos, &pixel_art, white);
             if(mouse_state & SDL_BUTTON_LMASK)
-                change_image_color(&mouse_pos, &image_rect, image, tile_size, selected_color);
+                change_image_color(&mouse_pos, &pixel_art, selected_color);
         }
         
 		while(SDL_PollEvent(&event)){
@@ -86,7 +89,7 @@ int main(int argc, char * argv[]){
                 case SDL_KEYDOWN:
                     switch(event.key.keysym.sym){
                         case SDLK_SPACE:
-                            fill_image(image, white);
+                            fill_image(&pixel_art, white);
                             break;
                     }
             }
@@ -95,14 +98,16 @@ int main(int argc, char * argv[]){
 		draw_spectrum(renderer, 1);
         draw_selected_color_sat(renderer, selected_hv);
         draw_selected_color(renderer, selected_color);
-        draw_pixel_art(renderer, image, tile_size, x_offset, y_offset);
+        draw_pixel_art(renderer, &pixel_art);
 		
     	SDL_RenderPresent(renderer);
 	}
 
 	status = EXIT_SUCCESS;
+    #pragma endregion
 
 Quit:
+    free(pixel_art.image);
     if(renderer != NULL){
         SDL_DestroyRenderer(renderer);
     }

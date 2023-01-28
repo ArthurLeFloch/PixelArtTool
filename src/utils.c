@@ -39,13 +39,14 @@ void draw_selected_color_sat(SDL_Renderer * renderer, HSV_Color color){
     }
 }
 
-void draw_pixel_art(SDL_Renderer * renderer, const SDL_Color image[IM_HEIGHT][IM_WIDTH], int tile_size, int x_offset, int y_offset){
+void draw_pixel_art(SDL_Renderer * renderer, const Pixel_Art * pixel_art){
     SDL_Color color;
     SDL_Rect rect;
-    for(int y = 0; y < IM_HEIGHT; y++){
-        for(int x = 0; x < IM_WIDTH; x++){
-            color = image[y][x];
-            rect = (SDL_Rect){x_offset + x*tile_size, y_offset + y*tile_size, tile_size, tile_size};
+    int tile_size = pixel_art->tile_size;
+    for(int y = 0; y < pixel_art->height; y++){
+        for(int x = 0; x < pixel_art->width; x++){
+            color = pixel_art->image[x + y*pixel_art->width];
+            rect = (SDL_Rect){pixel_art->x + x*tile_size, pixel_art->y + y*tile_size, tile_size, tile_size};
 
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
             SDL_RenderFillRect(renderer, &rect);
@@ -53,10 +54,10 @@ void draw_pixel_art(SDL_Renderer * renderer, const SDL_Color image[IM_HEIGHT][IM
     }
 }
 
-void fill_image(SDL_Color image[IM_HEIGHT][IM_WIDTH], SDL_Color color){
-    for(int y = 0; y < IM_HEIGHT; y++){
-        for(int x = 0; x < IM_WIDTH; x++){
-            image[y][x] = color;
+void fill_image(Pixel_Art * pixel_art, SDL_Color color){
+    for(int y = 0; y < pixel_art->height; y++){
+        for(int x = 0; x < pixel_art->width; x++){
+            pixel_art->image[x + y*pixel_art->width] = color;
         }
     }
 }
@@ -81,12 +82,12 @@ SDL_Color get_sat_color(SDL_Point * pos, SDL_Rect * sat, HSV_Color color){
     return hsv_to_rgb(result);
 }
 
-void change_image_color(SDL_Point * pos, SDL_Rect * image_rect, SDL_Color image[IM_HEIGHT][IM_WIDTH], int tile_size, SDL_Color color){
-    int x = pos->x - image_rect->x;
-    int y = pos->y - image_rect->y;
+void change_image_color(SDL_Point * pos, Pixel_Art * pixel_art, SDL_Color color){
+    int x = pos->x - pixel_art->rect.x;
+    int y = pos->y - pixel_art->rect.y;
 
-    int xc = x / tile_size;
-    int yc = y / tile_size;
+    int xc = x / pixel_art->tile_size;
+    int yc = y / pixel_art->tile_size;
 
-    image[yc][xc] = color;
+    pixel_art->image[xc + yc*pixel_art->width] = color;
 }
