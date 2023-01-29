@@ -36,11 +36,11 @@ int main(int argc, char * argv[]){
 
     #pragma endregion
 
-	SDL_Color background_color = {10, 14, 18, 255};
+	SDL_Color background_color = {20, 28, 36, 255};
     HSV_Color selected_hv = {0, 0, 0};
-    SDL_Color selected_color = {0, 0, 0, 255};
+    SDL_Color primary_c = {0, 0, 0, 255};
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Color second_color = {255, 255, 255, 255};
+    SDL_Color secondary_c = {255, 255, 255, 255};
 
 	#pragma region SDL INIT
 	SDL_Window * window = NULL;
@@ -82,8 +82,10 @@ int main(int argc, char * argv[]){
 
     #pragma endregion
 
-    SDL_Rect panel_palette_rect = {WIDTH-P_WIDTH, (HEIGHT - 200), P_WIDTH, 200};
-    SDL_Rect panel_saturation_rect = {WIDTH-P_WIDTH, (HEIGHT - 200 - 60), P_WIDTH, 40};
+    SDL_Rect palette_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200) - 10, P_WIDTH, 200};
+    SDL_Rect saturation_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60) - 10, P_WIDTH, 40};
+    SDL_Rect primary_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
+    SDL_Rect secondary_r = {(WIDTH - P_WIDTH/2 + 10) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
 
     #pragma region MAIN LOOP
     SDL_Point mouse_pos;
@@ -94,24 +96,24 @@ int main(int argc, char * argv[]){
 		Uint32 mouse_state = SDL_GetMouseState(&mouseX, &mouseY);
         mouse_pos = (SDL_Point){mouseX, mouseY};
 
-        if(SDL_PointInRect(&mouse_pos, &panel_palette_rect) && (mouse_state & SDL_BUTTON_LMASK)){
-            selected_hv = get_palette_color(&mouse_pos, &panel_palette_rect);
+        if(SDL_PointInRect(&mouse_pos, &palette_r) && (mouse_state & SDL_BUTTON_LMASK)){
+            selected_hv = get_palette_color(&mouse_pos, &palette_r);
         }
 
-        if(SDL_PointInRect(&mouse_pos, &panel_saturation_rect)){
+        if(SDL_PointInRect(&mouse_pos, &saturation_r)){
             if(mouse_state & SDL_BUTTON_LMASK)
-                selected_color = get_sat_color(&mouse_pos, &panel_saturation_rect, selected_hv);
+                primary_c = get_sat_color(&mouse_pos, &saturation_r, selected_hv);
             if(mouse_state & SDL_BUTTON_RMASK)
-                second_color = get_sat_color(&mouse_pos, &panel_saturation_rect, selected_hv);
+                secondary_c = get_sat_color(&mouse_pos, &saturation_r, selected_hv);
         }
 
         if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
             if(mouse_state & SDL_BUTTON_LMASK)
-                change_image_color(&mouse_pos, &pixel_art, selected_color);
+                change_image_color(&mouse_pos, &pixel_art, primary_c);
             if(mouse_state & SDL_BUTTON_MMASK)
-                selected_color = get_color_at(&mouse_pos, &pixel_art);
+                primary_c = get_color_at(&mouse_pos, &pixel_art);
             if(mouse_state & SDL_BUTTON_RMASK)
-                change_image_color(&mouse_pos, &pixel_art, second_color);
+                change_image_color(&mouse_pos, &pixel_art, secondary_c);
         }
         
 		while(SDL_PollEvent(&event)){
@@ -140,9 +142,9 @@ int main(int argc, char * argv[]){
             }
 		}
     	
-		draw_spectrum(renderer, selected_hv, 1);
-        draw_selected_color_sat(renderer, selected_hv);
-        draw_selected_colors(renderer, selected_color, second_color);
+		draw_spectrum(renderer, &palette_r, selected_hv, 1);
+        draw_selected_color_sat(renderer, &saturation_r, selected_hv);
+        draw_selected_colors(renderer, &primary_r, primary_c, &secondary_r, secondary_c);
         draw_pixel_art(renderer, &pixel_art);
 		
     	SDL_RenderPresent(renderer);
