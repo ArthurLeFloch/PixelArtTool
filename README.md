@@ -2,7 +2,7 @@
 Pixel Art Tool
 
 ## Requirements
-## Linux:
+### Linux:
   ```
   $ sudo apt-get install libsdl2-dev
   ```
