@@ -11,7 +11,7 @@
 
 int fill_background(SDL_Renderer * renderer, SDL_Color color);
 
-void draw_spectrum(SDL_Renderer * renderer, float saturation);
+void draw_spectrum(SDL_Renderer * renderer, HSV_Color selected, float saturation);
 
 void draw_selected_colors(SDL_Renderer * renderer, SDL_Color color, SDL_Color color2);
 

@@ -140,7 +140,7 @@ int main(int argc, char * argv[]){
             }
 		}
     	
-		draw_spectrum(renderer, 1);
+		draw_spectrum(renderer, selected_hv, 1);
         draw_selected_color_sat(renderer, selected_hv);
         draw_selected_colors(renderer, selected_color, second_color);
         draw_pixel_art(renderer, &pixel_art);
