@@ -125,6 +125,9 @@ int main(int argc, char * argv[]){
                     break;*/
                 case SDL_KEYDOWN:
                     switch(event.key.keysym.sym){
+                        case SDLK_ESCAPE:
+                            running = 0;
+                            break;
                         case SDLK_SPACE:
                             fill_image(&pixel_art, white);
                             break;
