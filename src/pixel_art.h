@@ -22,4 +22,6 @@ SDL_Color get_color_at(SDL_Point * pos, const Pixel_Art * pixel_art);
 
 void save(FILE *output, Pixel_Art * pixel_art);
 
+void fill_from_pos(Pixel_Art * pixel_art, SDL_Color new_color, SDL_Point pos);
+
 #endif // __PIXELART_H__

@@ -88,6 +88,7 @@ int main(int argc, char * argv[]){
 	SDL_Rect secondary_r = {(WIDTH - P_WIDTH/2 + 10) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
 
 	#pragma region MAIN LOOP
+	enum tool tool = PEN;
 	SDL_Point mouse_pos;
 	int running = 1;
 	while(running){
@@ -107,7 +108,7 @@ int main(int argc, char * argv[]){
 				secondary_c = get_lum_color(&mouse_pos, &luminosity_r, selected_hs);
 		}
 
-		if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
+		if(tool == PEN && SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
 			if(mouse_state & SDL_BUTTON_LMASK)
 				change_image_color(&mouse_pos, &pixel_art, primary_c);
 			if(mouse_state & SDL_BUTTON_MMASK)
@@ -121,8 +122,16 @@ int main(int argc, char * argv[]){
 				case SDL_QUIT:
 					running = 0;
 					break;
-				/*case SDL_MOUSEBUTTONDOWN:
-					break;*/
+				case SDL_MOUSEBUTTONDOWN:
+					if(event.button.button == SDL_BUTTON_LEFT){
+						if(tool == BUCKET && SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
+							fill_from_pos(&pixel_art, primary_c, mouse_pos);
+						}
+					} else if(event.button.button == SDL_BUTTON_RIGHT){
+						if(tool == BUCKET && SDL_PointInRect(&mouse_pos, &pixel_art.rect))
+							fill_from_pos(&pixel_art, secondary_c, mouse_pos);
+					}
+					break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:
@@ -140,6 +149,14 @@ int main(int argc, char * argv[]){
 							}
 							save(output, &pixel_art);
 							printf("Saved pixel art successfully !\n");
+							break;
+						case SDLK_p:
+							tool = PEN;
+							printf("Switched to PEN\n");
+							break;
+						case SDLK_b:
+							tool = BUCKET;
+							printf("Switched to bucket\n");
 							break;
 					}
 			}

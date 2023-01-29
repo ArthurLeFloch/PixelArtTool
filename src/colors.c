@@ -112,3 +112,7 @@ void print_hsv(HSV_Color color){
 void print_rgb(SDL_Color color){
 	printf("Red : %d \tGreen : %d \tBlue : %d\n", color.r, color.g, color.b);
 }
+
+int are_color_equal(SDL_Color color1, SDL_Color color2){
+	return (color1.r == color2.r) && (color1.g == color2.g) && (color1.b == color2.b) && (color1.a == color2.a);
+}

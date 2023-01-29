@@ -17,4 +17,6 @@ void print_hsv(HSV_Color color);
 
 void print_rgb(SDL_Color color);
 
+int are_color_equal(SDL_Color color1, SDL_Color color2);
+
 #endif // __COLORS_H__
