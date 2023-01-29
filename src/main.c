@@ -11,7 +11,7 @@ int main(int argc, char * argv[]){
 
     #pragma region OPTIONS
     int width=15, height=15;
-    char *filename = "default_pixel_art.png";
+    char *filename = "output.ppm";
     int opt;
 
     while((opt = getopt(argc, argv, "s:o:")) != -1){
