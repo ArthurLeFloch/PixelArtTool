@@ -37,7 +37,7 @@ int main(int argc, char * argv[]){
     #pragma endregion
 
 	SDL_Color background_color = {20, 28, 36, 255};
-    HSV_Color selected_hv = {0, 0, 0};
+    HSV_Color selected_hs = {0, 0, 0};
     SDL_Color primary_c = {0, 0, 0, 255};
     SDL_Color white = {255, 255, 255, 255};
     SDL_Color secondary_c = {255, 255, 255, 255};
@@ -83,7 +83,7 @@ int main(int argc, char * argv[]){
     #pragma endregion
 
     SDL_Rect palette_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200) - 10, P_WIDTH, 200};
-    SDL_Rect saturation_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60) - 10, P_WIDTH, 40};
+    SDL_Rect luminosity_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60) - 10, P_WIDTH, 40};
     SDL_Rect primary_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
     SDL_Rect secondary_r = {(WIDTH - P_WIDTH/2 + 10) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
 
@@ -97,14 +97,14 @@ int main(int argc, char * argv[]){
         mouse_pos = (SDL_Point){mouseX, mouseY};
 
         if(SDL_PointInRect(&mouse_pos, &palette_r) && (mouse_state & SDL_BUTTON_LMASK)){
-            selected_hv = get_palette_color(&mouse_pos, &palette_r);
+            selected_hs = get_palette_color(&mouse_pos, &palette_r);
         }
 
-        if(SDL_PointInRect(&mouse_pos, &saturation_r)){
+        if(SDL_PointInRect(&mouse_pos, &luminosity_r)){
             if(mouse_state & SDL_BUTTON_LMASK)
-                primary_c = get_sat_color(&mouse_pos, &saturation_r, selected_hv);
+                primary_c = get_lum_color(&mouse_pos, &luminosity_r, selected_hs);
             if(mouse_state & SDL_BUTTON_RMASK)
-                secondary_c = get_sat_color(&mouse_pos, &saturation_r, selected_hv);
+                secondary_c = get_lum_color(&mouse_pos, &luminosity_r, selected_hs);
         }
 
         if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
@@ -142,8 +142,8 @@ int main(int argc, char * argv[]){
             }
 		}
     	
-		draw_spectrum(renderer, &palette_r, selected_hv, 1);
-        draw_selected_color_sat(renderer, &saturation_r, selected_hv);
+		draw_spectrum(renderer, &palette_r, selected_hs);
+        draw_selected_color_sat(renderer, &luminosity_r, selected_hs);
         draw_selected_colors(renderer, &primary_r, primary_c, &secondary_r, secondary_c);
         draw_pixel_art(renderer, &pixel_art);
 		

@@ -40,18 +40,3 @@ void save(FILE *output, Pixel_Art * pixel_art){
         }
     }
 }
-
-void draw_pixel_art(SDL_Renderer * renderer, const Pixel_Art * pixel_art){
-    SDL_Color color;
-    SDL_Rect rect;
-    int tile_size = pixel_art->tile_size;
-    for(int y = 0; y < pixel_art->height; y++){
-        for(int x = 0; x < pixel_art->width; x++){
-            color = pixel_art->image[x + y*pixel_art->width];
-            rect = (SDL_Rect){pixel_art->x + x*tile_size, pixel_art->y + y*tile_size, tile_size, tile_size};
-
-            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-            SDL_RenderFillRect(renderer, &rect);
-        }
-    }
-}
