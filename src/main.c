@@ -71,8 +71,8 @@ int main(int argc, char * argv[]){
 	#pragma endregion
 
     #pragma region PIXEL ART INIT
-    int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET) / (float)width, (float)(HEIGHT - OFFSET) / (float)height);
-    int x_offset = ((WIDTH - P_WIDTH) - width * tile_size) / 2;
+    int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET - 20) / (float)width, (float)(HEIGHT - OFFSET) / (float)height);
+    int x_offset = ((WIDTH - P_WIDTH - 20) - width * tile_size) / 2;
     int y_offset = (HEIGHT - height * tile_size) / 2;
     SDL_Rect rect = {x_offset, y_offset, width*tile_size, height*tile_size};
 
