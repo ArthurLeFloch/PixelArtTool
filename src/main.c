@@ -27,7 +27,7 @@ int main(int argc, char * argv[]){
                 filename = optarg;
                 break;
             default:
-                fprintf(stderr, "Usage: %s -s <width>x<height>\n", argv[0]);
+                fprintf(stderr, "Usage: %s -s <width>x<height> -o <filename> \n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
