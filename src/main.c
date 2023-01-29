@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
 #include <unistd.h>
 
+#include "render.h"
 #include "utils.h"
+#include "pixel_art.h"
 
 int main(int argc, char * argv[]){
 	int status = EXIT_FAILURE;
@@ -31,13 +32,7 @@ int main(int argc, char * argv[]){
         }
     }
     printf("Output file: %s\n", filename);
-
-    FILE *output;
-    output = fopen(filename, "w");
-    if(output == NULL){
-        perror("Error opening file");
-        exit(EXIT_FAILURE);
-    }
+    FILE *output = NULL;
 
     #pragma endregion
 
@@ -45,6 +40,7 @@ int main(int argc, char * argv[]){
     HSV_Color selected_hv = {0, 0, 0};
     SDL_Color selected_color = {0, 0, 0, 255};
     SDL_Color white = {255, 255, 255, 255};
+    SDL_Color second_color = {255, 255, 255, 255};
 
 	#pragma region SDL INIT
 	SDL_Window * window = NULL;
@@ -101,14 +97,21 @@ int main(int argc, char * argv[]){
         if(SDL_PointInRect(&mouse_pos, &panel_palette_rect) && (mouse_state & SDL_BUTTON_LMASK)){
             selected_hv = get_palette_color(&mouse_pos, &panel_palette_rect);
         }
-        if(SDL_PointInRect(&mouse_pos, &panel_saturation_rect) && (mouse_state & SDL_BUTTON_LMASK)){
-            selected_color = get_sat_color(&mouse_pos, &panel_saturation_rect, selected_hv);
-        }
-        if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
+
+        if(SDL_PointInRect(&mouse_pos, &panel_saturation_rect)){
+            if(mouse_state & SDL_BUTTON_LMASK)
+                selected_color = get_sat_color(&mouse_pos, &panel_saturation_rect, selected_hv);
             if(mouse_state & SDL_BUTTON_RMASK)
-                change_image_color(&mouse_pos, &pixel_art, white);
+                second_color = get_sat_color(&mouse_pos, &panel_saturation_rect, selected_hv);
+        }
+
+        if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
             if(mouse_state & SDL_BUTTON_LMASK)
                 change_image_color(&mouse_pos, &pixel_art, selected_color);
+            if(mouse_state & SDL_BUTTON_MMASK)
+                selected_color = get_color_at(&mouse_pos, &pixel_art);
+            if(mouse_state & SDL_BUTTON_RMASK)
+                change_image_color(&mouse_pos, &pixel_art, second_color);
         }
         
 		while(SDL_PollEvent(&event)){
@@ -125,6 +128,11 @@ int main(int argc, char * argv[]){
                             break;
                         case SDLK_s:
                             printf("Saving pixel art to %s...\n", filename);
+                            output = fopen(filename, "w");
+                            if(output == NULL){
+                                perror("Error opening file");
+                                exit(EXIT_FAILURE);
+                            }
                             save(output, &pixel_art);
                             printf("Saved pixel art successfully !\n");
                             break;
@@ -134,7 +142,7 @@ int main(int argc, char * argv[]){
     	
 		draw_spectrum(renderer, 1);
         draw_selected_color_sat(renderer, selected_hv);
-        draw_selected_color(renderer, selected_color);
+        draw_selected_colors(renderer, selected_color, second_color);
         draw_pixel_art(renderer, &pixel_art);
 		
     	SDL_RenderPresent(renderer);
@@ -145,13 +153,12 @@ int main(int argc, char * argv[]){
 
 Quit:
     free(pixel_art.image);
-    fclose(output);
-    if(renderer != NULL){
+    if(output != NULL)
+        fclose(output);
+    if(renderer != NULL)
         SDL_DestroyRenderer(renderer);
-    }
-    if(window != NULL){
+    if(window != NULL)
         SDL_DestroyWindow(window);
-    }
     
     SDL_Quit();
     return status;
