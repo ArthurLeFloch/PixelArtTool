@@ -4,9 +4,9 @@
 #include <SDL2/SDL.h>
 
 typedef struct HSV_Color{
-    float h;
-    float s;
-    float v;
+	float h;
+	float s;
+	float v;
 } HSV_Color;
 
 HSV_Color rgb_to_hsv(SDL_Color color);

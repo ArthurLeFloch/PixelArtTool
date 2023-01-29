@@ -5,13 +5,13 @@
 #include <SDL2/SDL.h>
 
 typedef struct {
-    const int width;
-    const int height;
-    const int x;
-    const int y;
-    const int tile_size;
-    SDL_Rect rect;
-    SDL_Color * image;
+	const int width;
+	const int height;
+	const int x;
+	const int y;
+	const int tile_size;
+	SDL_Rect rect;
+	SDL_Color * image;
 } Pixel_Art;
 
 void fill_image(Pixel_Art * pixel_art, SDL_Color color);
