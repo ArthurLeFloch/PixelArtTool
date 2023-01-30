@@ -3,12 +3,6 @@
 
 #include "colors.h"
 
-enum tool{
-    PEN = 0,
-    BUCKET,
-    PIPETTE
-};
-
 HSV_Color get_palette_color(SDL_Point * pos, SDL_Rect * palette);
 
 SDL_Color get_lum_color(SDL_Point * pos, SDL_Rect * lum, HSV_Color color);

@@ -88,6 +88,7 @@ int main(int argc, char * argv[]){
 	SDL_Rect secondary_r = {(WIDTH - P_WIDTH/2 + 10) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
 
 	#pragma region MAIN LOOP
+	load_assets(renderer);
 	enum tool tool = PEN;
 	SDL_Point mouse_pos;
 	int running = 1;
@@ -111,8 +112,6 @@ int main(int argc, char * argv[]){
 		if(tool == PEN && SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
 			if(mouse_state & SDL_BUTTON_LMASK)
 				change_image_color(&mouse_pos, &pixel_art, primary_c);
-			if(mouse_state & SDL_BUTTON_MMASK)
-				primary_c = get_color_at(&mouse_pos, &pixel_art);
 			if(mouse_state & SDL_BUTTON_RMASK)
 				change_image_color(&mouse_pos, &pixel_art, secondary_c);
 		}
@@ -124,12 +123,20 @@ int main(int argc, char * argv[]){
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 					if(event.button.button == SDL_BUTTON_LEFT){
-						if(tool == BUCKET && SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
-							fill_from_pos(&pixel_art, primary_c, mouse_pos);
+						if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
+							if(tool == BUCKET)
+								fill_from_pos(&pixel_art, primary_c, mouse_pos);
+							if(tool == PIPETTE)
+								primary_c = get_color_at(&mouse_pos, &pixel_art);
 						}
+						set_selected_tool(&mouse_pos, &tool);
 					} else if(event.button.button == SDL_BUTTON_RIGHT){
-						if(tool == BUCKET && SDL_PointInRect(&mouse_pos, &pixel_art.rect))
-							fill_from_pos(&pixel_art, secondary_c, mouse_pos);
+						if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
+							if(tool == BUCKET)
+								fill_from_pos(&pixel_art, secondary_c, mouse_pos);
+							if(tool == PIPETTE)
+								secondary_c = get_color_at(&mouse_pos, &pixel_art);
+						}
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -161,6 +168,8 @@ int main(int argc, char * argv[]){
 					}
 			}
 		}
+
+		render_icons(renderer, tool);
 		
 		draw_spectrum(renderer, &palette_r, selected_hs);
 		draw_selected_color_sat(renderer, &luminosity_r, selected_hs);
@@ -174,6 +183,7 @@ int main(int argc, char * argv[]){
 	#pragma endregion
 
 Quit:
+	free_assets();
 	free(pixel_art.image);
 	if(output != NULL)
 		fclose(output);
