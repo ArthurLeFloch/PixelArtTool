@@ -35,9 +35,32 @@ void save(FILE *output, Pixel_Art * pixel_art){
 	for(int y=0; y<pixel_art->height; y++){
 		for(int x=0; x<pixel_art->width; x++){
 			color = pixel_art->image[x + y*pixel_art->width];
-			fputc(color.r, output);
-			fputc(color.g, output);
-			fputc(color.b, output);
+			fwrite(&color.r, 1, 1, output);
+			fwrite(&color.g, 1, 1, output);
+			fwrite(&color.b, 1, 1, output);
+		}
+	}
+}
+
+void get_dimension(FILE *input, Pixel_Art * pixel_art){
+	char magic_number[3];
+	int max_value;
+
+	fscanf(input, "%s\n%i %i %i\n", magic_number, &pixel_art->width, &pixel_art->height, &max_value);
+	if(strcmp(magic_number, "P6") != 0 || max_value != 255){
+		fprintf(stderr, "Error reading file\n");
+	}
+}
+
+void fill_from_file(FILE *input, Pixel_Art * pixel_art){
+	SDL_Color color;
+	for(int y = 0; y<pixel_art->height; y++){
+		for(int x = 0; x<pixel_art->width; x++){
+			fread(&color.r, 1, 1, input);
+			fread(&color.g, 1, 1, input);
+			fread(&color.b, 1, 1, input);
+			color.a = 255;
+			pixel_art->image[x + y*pixel_art->width] = color;
 		}
 	}
 }

@@ -10,11 +10,13 @@ int main(int argc, char * argv[]){
 	int status = EXIT_FAILURE;
 
 	#pragma region OPTIONS
-	int width=15, height=15;
-	char *filename = "output.ppm";
+	int width = 0, height = 0;
+	char *default_destination = "output.ppm";
+	char *destination = "output.ppm";
+	char *source = NULL;
 	int opt;
 
-	while((opt = getopt(argc, argv, "s:o:")) != -1){
+	while((opt = getopt(argc, argv, "s:o:f:")) != -1){
 		switch(opt){
 			case 's':
 				if(sscanf(optarg, "%dx%d", &width, &height) != 2){
@@ -24,14 +26,44 @@ int main(int argc, char * argv[]){
 				printf("Width: %d \t Height: %d\n", width, height);
 				break;
 			case 'o':
-				filename = optarg;
+				destination = optarg;
+				break;
+			case 'f':
+				source = optarg;
+				printf("Loading %s...\n", optarg);
 				break;
 			default:
-				fprintf(stderr, "Usage: %s -s <width>x<height> -o <filename> \n", argv[0]);
+				fprintf(stderr, "Usage: %s -s <width>x<height> -f <source> -o <destination> \n", argv[0]);
 				exit(EXIT_FAILURE);
 		}
 	}
-	printf("Output file: %s\n", filename);
+
+	if(width == 0 && height == 0 && source == NULL){
+		printf("No source file and dimensions, setup with 15x15\n");
+		width = 15;
+		height = 15;
+	}
+
+	if((width != 0 || height != 0) && source != NULL){
+		printf("Warning : width and height cannot be defined when choosing source file\n");
+		width = 0;
+		height = 0;
+	}
+
+	if(strcmp(destination, default_destination) == 0 && source != NULL){
+		destination = source;
+		printf("Saved file %s will overwrite existing file %s\n", destination, source);
+	}
+
+	FILE *input = NULL;
+	if(source != NULL)
+		input = fopen(source, "r");
+	if(source != NULL && input == NULL){
+		fprintf(stderr, "Source file %s does not exists\n", source);
+		exit(EXIT_FAILURE);
+	}	
+
+	printf("Output file: %s\n", destination);
 	FILE *output = NULL;
 
 	#pragma endregion
@@ -71,14 +103,32 @@ int main(int argc, char * argv[]){
 	#pragma endregion
 
 	#pragma region PIXEL ART INIT
-	int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET - 20) / (float)width, (float)(HEIGHT - OFFSET) / (float)height);
-	int x_offset = ((WIDTH - P_WIDTH - 20) - width * tile_size) / 2;
-	int y_offset = (HEIGHT - height * tile_size) / 2;
-	SDL_Rect rect = {x_offset, y_offset, width*tile_size, height*tile_size};
+	Pixel_Art pixel_art = {};
+	if(input != NULL){
+		get_dimension(input, &pixel_art);
+		printf("Detected size %dx%d in file %s\n", pixel_art.width, pixel_art.height, source);
+		width = pixel_art.width;
+		height = pixel_art.height;
+	} else {
+		pixel_art.width = width;
+		pixel_art.height = height;
+	}
 
-	Pixel_Art pixel_art = {width, height, x_offset, y_offset, tile_size, rect, NULL};
+	int tile_size = fmin((float)(WIDTH - P_WIDTH - OFFSET - 20) / (float)width, (float)(HEIGHT - OFFSET) / (float)height);
+	int x = ((WIDTH - P_WIDTH - 20) - width * tile_size) / 2;
+	int y = (HEIGHT - height * tile_size) / 2;
+	SDL_Rect rect = {x, y, width * tile_size, height * tile_size};
+
+	pixel_art.x = x;
+	pixel_art.y = y;
+	pixel_art.tile_size = tile_size;
+	pixel_art.rect = rect;
+
 	pixel_art.image = malloc(sizeof(SDL_Color) * height * width);
-	fill_image(&pixel_art, white);
+	if(input == NULL)
+		fill_image(&pixel_art, white);
+	else
+		fill_from_file(input, &pixel_art);
 
 	#pragma endregion
 
@@ -148,8 +198,8 @@ int main(int argc, char * argv[]){
 							fill_image(&pixel_art, white);
 							break;
 						case SDLK_s:
-							printf("Saving pixel art to %s...\n", filename);
-							output = fopen(filename, "w");
+							printf("Saving pixel art to %s...\n", destination);
+							output = fopen(destination, "w");
 							if(output == NULL){
 								perror("Error opening file");
 								exit(EXIT_FAILURE);
@@ -177,6 +227,8 @@ int main(int argc, char * argv[]){
 Quit:
 	free_assets();
 	free(pixel_art.image);
+	if(input != NULL)
+		fclose(input);
 	if(output != NULL)
 		fclose(output);
 	if(renderer != NULL)
