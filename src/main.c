@@ -157,14 +157,6 @@ int main(int argc, char * argv[]){
 							save(output, &pixel_art);
 							printf("Saved pixel art successfully !\n");
 							break;
-						case SDLK_p:
-							tool = PEN;
-							printf("Switched to PEN\n");
-							break;
-						case SDLK_b:
-							tool = BUCKET;
-							printf("Switched to bucket\n");
-							break;
 					}
 			}
 		}
