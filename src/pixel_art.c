@@ -1,7 +1,7 @@
 #include "pixel_art.h"
 #include "colors.h"
 
-void fill_image(Pixel_Art * pixel_art, SDL_Color color){
+void fill_image(PixelArt * pixel_art, SDL_Color color){
 	for(int y = 0; y < pixel_art->height; y++){
 		for(int x = 0; x < pixel_art->width; x++){
 			pixel_art->image[x + y*pixel_art->width] = color;
@@ -9,7 +9,7 @@ void fill_image(Pixel_Art * pixel_art, SDL_Color color){
 	}
 }
 
-void change_image_color(SDL_Point * pos, Pixel_Art * pixel_art, SDL_Color color){
+void change_image_color(SDL_Point * pos, PixelArt * pixel_art, SDL_Color color){
 	int x = pos->x - pixel_art->rect.x;
 	int y = pos->y - pixel_art->rect.y;
 
@@ -19,7 +19,7 @@ void change_image_color(SDL_Point * pos, Pixel_Art * pixel_art, SDL_Color color)
 	pixel_art->image[xc + yc*pixel_art->width] = color;
 }
 
-SDL_Color get_color_at(SDL_Point * pos, const Pixel_Art * pixel_art){
+SDL_Color get_color_at(SDL_Point * pos, const PixelArt * pixel_art){
 	int x = pos->x - pixel_art->rect.x;
 	int y = pos->y - pixel_art->rect.y;
 
@@ -29,7 +29,7 @@ SDL_Color get_color_at(SDL_Point * pos, const Pixel_Art * pixel_art){
 	return pixel_art->image[xc + yc*pixel_art->width];
 }
 
-void save(FILE *output, Pixel_Art * pixel_art){
+void save(FILE *output, PixelArt * pixel_art){
 	SDL_Color color;
 	fprintf(output, "P6\n%i %i 255\n", pixel_art->width, pixel_art->height);
 	for(int y=0; y<pixel_art->height; y++){
@@ -42,7 +42,7 @@ void save(FILE *output, Pixel_Art * pixel_art){
 	}
 }
 
-void get_dimension(FILE *input, Pixel_Art * pixel_art){
+void get_dimension(FILE *input, PixelArt * pixel_art){
 	char magic_number[3];
 	int max_value;
 
@@ -52,7 +52,7 @@ void get_dimension(FILE *input, Pixel_Art * pixel_art){
 	}
 }
 
-void fill_from_file(FILE *input, Pixel_Art * pixel_art){
+void fill_from_file(FILE *input, PixelArt * pixel_art){
 	SDL_Color color;
 	for(int y = 0; y<pixel_art->height; y++){
 		for(int x = 0; x<pixel_art->width; x++){
@@ -65,11 +65,11 @@ void fill_from_file(FILE *input, Pixel_Art * pixel_art){
 	}
 }
 
-int is_point_inside(const Pixel_Art * pixel_art, SDL_Point pos){
+int is_point_inside(const PixelArt * pixel_art, SDL_Point pos){
 	return (pos.x >= 0 && pos.x < pixel_art->width) && (pos.y >= 0 && pos.y < pixel_art->height);
 }
 
-void fill_from_pos_rec(Pixel_Art * pixel_art, SDL_Color color, SDL_Color new_color, SDL_Point pos){
+void fill_from_pos_rec(PixelArt * pixel_art, SDL_Color color, SDL_Color new_color, SDL_Point pos){
 	int index = pos.x + pos.y*pixel_art->width;
 	SDL_Color current_color = pixel_art->image[index];
 	if(!are_color_equal(current_color, color))
@@ -91,7 +91,7 @@ void fill_from_pos_rec(Pixel_Art * pixel_art, SDL_Color color, SDL_Color new_col
 
 }
 
-void fill_from_pos(Pixel_Art * pixel_art, SDL_Color new_color, SDL_Point pos){
+void fill_from_pos(PixelArt * pixel_art, SDL_Color new_color, SDL_Point pos){
 	int x = pos.x - pixel_art->rect.x;
 	int y = pos.y - pixel_art->rect.y;
 

@@ -103,7 +103,7 @@ int main(int argc, char * argv[]){
 	#pragma endregion
 
 	#pragma region PIXEL ART INIT
-	Pixel_Art pixel_art = {};
+	PixelArt pixel_art = {};
 	if(input != NULL){
 		get_dimension(input, &pixel_art);
 		printf("Detected size %dx%d in file %s\n", pixel_art.width, pixel_art.height, source);
@@ -141,12 +141,19 @@ int main(int argc, char * argv[]){
 	load_assets(renderer);
 	enum tool tool = PEN;
 	SDL_Point mouse_pos;
+	int click = 0;
+	int clicked_up = 0;
+
 	int running = 1;
 	while(running){
 		fill_background(renderer, background_color);
 
 		Uint32 mouse_state = SDL_GetMouseState(&mouseX, &mouseY);
 		mouse_pos = (SDL_Point){mouseX, mouseY};
+
+		if(mouse_state & SDL_BUTTON_LMASK){
+			click = 1;
+		}
 
 		if(SDL_PointInRect(&mouse_pos, &palette_r) && (mouse_state & SDL_BUTTON_LMASK)){
 			selected_hs = get_palette_color(&mouse_pos, &palette_r);
@@ -179,17 +186,6 @@ int main(int argc, char * argv[]){
 							if(tool == PIPETTE)
 								primary_c = get_color_at(&mouse_pos, &pixel_art);
 						}
-						int result = handle_buttons(&mouse_pos, &tool);
-						if(result == 1){
-							printf("Saving pixel art to %s...\n", destination);
-							output = fopen(destination, "w");
-							if(output == NULL){
-								perror("Error opening file");
-								exit(EXIT_FAILURE);
-							}
-							save(output, &pixel_art);
-							printf("Saved pixel art successfully !\n");
-						}
 					} else if(event.button.button == SDL_BUTTON_RIGHT){
 						if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
 							if(tool == BUCKET)
@@ -199,6 +195,10 @@ int main(int argc, char * argv[]){
 						}
 					}
 					break;
+				case SDL_MOUSEBUTTONUP:
+					if(event.button.button == SDL_BUTTON_LEFT){
+						clicked_up = 1;
+					}
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:
@@ -214,7 +214,17 @@ int main(int argc, char * argv[]){
 			}
 		}
 
-		render_icons(renderer, tool);
+		int result = update_buttons(renderer, &mouse_pos, &tool, click, clicked_up);
+		if(result == 1){
+			printf("Saving pixel art to %s...\n", destination);
+			output = fopen(destination, "w");
+			if(output == NULL){
+				perror("Error opening file");
+				exit(EXIT_FAILURE);
+			}
+			save(output, &pixel_art);
+			printf("Saved pixel art successfully !\n");
+		}
 		
 		draw_spectrum(renderer, &palette_r, selected_hs);
 		draw_selected_color_sat(renderer, &luminosity_r, selected_hs);
@@ -222,6 +232,8 @@ int main(int argc, char * argv[]){
 		draw_pixel_art(renderer, &pixel_art);
 		
 		SDL_RenderPresent(renderer);
+		click = 0;
+		clicked_up = 0;
 	}
 
 	status = EXIT_SUCCESS;

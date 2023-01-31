@@ -1,4 +1,7 @@
-CFLAGS = -Wall -Wextra -std=c99 -g3
+WIDTH ?= 1400
+HEIGHT ?= 900
+OPT = -D WIDTH=$(WIDTH) -D HEIGHT=$(HEIGHT)
+CFLAGS = -Wall -Wextra -std=c99 -g3 $(OPT)
 OTHERS = colors.o utils.o render.o pixel_art.o
 
 vpath % src
@@ -9,8 +12,8 @@ all: project
 	gcc -c $(CFLAGS) $< -I src/
 
 project: $(OTHERS)
-	gcc -c src/main.c $(sdl2-config --cflags --libs)
-	gcc -o project $(OTHERS) main.o -lSDL2 -lm
+	gcc $(OPT) -c src/main.c $(sdl2-config --cflags --libs)
+	gcc $(CFLAGS) -o project $(OTHERS) main.o -lSDL2 -lm
 
 clean:
 	rm -f project

@@ -1,13 +1,29 @@
 #include "render.h"
 
 typedef struct Icon{
+	enum tool tool;
 	SDL_Rect rect;
 	SDL_Texture * texture;
 } Icon;
 
 Icon pen, bucket, pipette, saving;
 
-void draw_outline(SDL_Renderer * renderer, const SDL_Rect * rect, int key){
+enum button_state{
+	SELECTED = 0,
+	CLICKED,
+	HOVERED,
+	NO_STATE
+};
+
+SDL_Color white = {255, 255, 255, 255};
+SDL_Color red = {255, 100, 100, 255};
+
+SDL_Color selected = {255, 255, 255, 255};
+SDL_Color clicked = {100, 255, 100, 255};
+SDL_Color hovered = {100, 100, 255, 255};
+SDL_Color classic = {100, 100, 100, 255};
+
+void draw_outline(SDL_Renderer * renderer, const SDL_Rect * rect, SDL_Color color){
 	SDL_Rect rect1 = {rect->x - 4, rect->y - 4, rect->w + 8, rect->h + 8};
 	SDL_Rect rect2 = {rect->x - 1, rect->y - 1, rect->w + 2, rect->h + 2};
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -16,17 +32,8 @@ void draw_outline(SDL_Renderer * renderer, const SDL_Rect * rect, int key){
 
 	rect1 = (SDL_Rect){rect->x - 2, rect->y - 2, rect->w + 4, rect->h + 4};
 	rect2 = (SDL_Rect){rect->x - 3, rect->y - 3, rect->w + 6, rect->h + 6};
-	switch(key){
-		case 1:
-			SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255);
-			break;
-		case 2:
-			SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-			break;
-		default:
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			break;
-	}
+
+	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 		
 	SDL_RenderDrawRect(renderer, &rect1);
 	SDL_RenderDrawRect(renderer, &rect2);
@@ -41,7 +48,7 @@ int fill_background(SDL_Renderer * renderer, SDL_Color color){
 }
 
 void draw_spectrum(SDL_Renderer * renderer, SDL_Rect * output, HSV_Color selected){
-	draw_outline(renderer, output, 0);
+	draw_outline(renderer, output, white);
 	for(int s = 0; s < output->h; s ++){
 		for(int h = 0; h < output->w; h++){
 			HSV_Color hsv = {h/(float)output->w, s/(float)output->h, 0.8f};
@@ -51,21 +58,21 @@ void draw_spectrum(SDL_Renderer * renderer, SDL_Rect * output, HSV_Color selecte
 		}
 	}
 	SDL_Rect rect = {output->x + roundf(output->w*selected.h) - 10, output->y + roundf(200*(1-selected.s)) - 10, 20, 20};
-	draw_outline(renderer, &rect, 0);
+	draw_outline(renderer, &rect, white);
 }
 
 void draw_selected_colors(SDL_Renderer * renderer, SDL_Rect * primary_r, SDL_Color primary, SDL_Rect * secondary_r, SDL_Color secondary){
-	draw_outline(renderer, primary_r, 0);
+	draw_outline(renderer, primary_r, white);
 	SDL_SetRenderDrawColor(renderer, primary.r, primary.g, primary.b, primary.a);
 	SDL_RenderFillRect(renderer, primary_r);
 
-	draw_outline(renderer, secondary_r, 1);
+	draw_outline(renderer, secondary_r, red);
 	SDL_SetRenderDrawColor(renderer, secondary.r, secondary.g, secondary.b, secondary.a);
 	SDL_RenderFillRect(renderer, secondary_r);
 }
 
 void draw_selected_color_sat(SDL_Renderer * renderer, SDL_Rect * output, HSV_Color color){
-	draw_outline(renderer, output, 0);
+	draw_outline(renderer, output, white);
 	HSV_Color hsv;
 	SDL_Color new_color;
 	int high = output->y, low = output->y + output->h;
@@ -79,8 +86,8 @@ void draw_selected_color_sat(SDL_Renderer * renderer, SDL_Rect * output, HSV_Col
 	}
 }
 
-void draw_pixel_art(SDL_Renderer * renderer, const Pixel_Art * pixel_art){
-	draw_outline(renderer, &pixel_art->rect, 0);
+void draw_pixel_art(SDL_Renderer * renderer, const PixelArt * pixel_art){
+	draw_outline(renderer, &pixel_art->rect, white);
 	SDL_Color color;
 	SDL_Rect rect;
 	int tile_size = pixel_art->tile_size;
@@ -109,21 +116,25 @@ void load_assets(SDL_Renderer * renderer){
 	int x = (WIDTH - P_WIDTH) - 10;
 	int y = 20;
 	pen.rect = (SDL_Rect){x, y, 60, 60};
+	pen.tool = PEN;
 
 	bucket.texture = load_image(renderer, "assets/bucket.bmp");
 	x = (WIDTH - P_WIDTH) - 10;
 	y = 100;
 	bucket.rect = (SDL_Rect){x, y, 60, 60};
+	bucket.tool = BUCKET;
 
 	pipette.texture = load_image(renderer, "assets/pipette.bmp");
 	x = (WIDTH - P_WIDTH) - 10;
 	y = 180;
 	pipette.rect = (SDL_Rect){x, y, 60, 60};
+	pipette.tool = PIPETTE;
 
 	saving.texture = load_image(renderer, "assets/save.bmp");
 	x = WIDTH - 60 - 20;
 	y = 20;
 	saving.rect = (SDL_Rect){x, y, 60, 60};
+	saving.tool = NONE;
 }
 
 void fill_icon_background(SDL_Renderer * renderer, Icon * icon, int is_selected){
@@ -131,23 +142,9 @@ void fill_icon_background(SDL_Renderer * renderer, Icon * icon, int is_selected)
 	int alpha = 80;
 	if(is_selected)
 		alpha = 200;
-	draw_outline(renderer, &background, 2 * (1 - is_selected));
+	draw_outline(renderer, &background, classic);
 	SDL_SetRenderDrawColor(renderer, 120, 120, 180, alpha);
 	SDL_RenderFillRect(renderer, &background);
-}
-
-void render_icons(SDL_Renderer * renderer, enum tool tool){
-	fill_icon_background(renderer, &pen, (tool == PEN));
-	SDL_RenderCopy(renderer, pen.texture, NULL, &pen.rect);
-
-	fill_icon_background(renderer, &bucket, (tool == BUCKET));
-	SDL_RenderCopy(renderer, bucket.texture, NULL, &bucket.rect);
-
-	fill_icon_background(renderer, &pipette, (tool == PIPETTE));
-	SDL_RenderCopy(renderer, pipette.texture, NULL, &pipette.rect);
-
-	fill_icon_background(renderer, &saving, 1);
-	SDL_RenderCopy(renderer, saving.texture, NULL, &saving.rect);
 }
 
 void free_assets(){
@@ -157,14 +154,54 @@ void free_assets(){
 	SDL_DestroyTexture(saving.texture);
 }
 
-int handle_buttons(SDL_Point * pos, enum tool * tool){
-	if(SDL_PointInRect(pos, &pen.rect))
-		*tool = PEN;
-	else if(SDL_PointInRect(pos, &bucket.rect))
-		*tool = BUCKET;
-	else if(SDL_PointInRect(pos, &pipette.rect))
-		*tool = PIPETTE;
-	else if(SDL_PointInRect(pos, &saving.rect))
-		return 1;
-	return 0;
+void update_icon(SDL_Renderer * renderer, Icon * icon, enum button_state state){
+	SDL_Rect background = {icon->rect.x - 4, icon->rect.y - 4, icon->rect.w + 8, icon->rect.h + 8};
+	SDL_Color outline = classic;
+	int alpha = 200;
+	if(state == NO_STATE)
+		alpha = 80;
+	if(state == SELECTED)
+		outline = white;
+	else if(state == CLICKED)
+		outline = selected;
+	else if(state == HOVERED)
+		outline = hovered;
+	
+	draw_outline(renderer, &background, outline);
+	SDL_SetRenderDrawColor(renderer, 120, 120, 180, alpha);
+	SDL_RenderFillRect(renderer, &background);
+
+	SDL_RenderCopy(renderer, icon->texture, NULL, &icon->rect);
+}
+
+int update_button(SDL_Renderer * renderer, SDL_Point * pos, Icon * icon, enum tool * tool, int click, int clicked){
+	enum button_state state = NO_STATE;
+	int result = 0;
+	if(*tool == icon->tool)
+		state = SELECTED;
+	else if(SDL_PointInRect(pos, &icon->rect)){
+		if(clicked){
+			if(icon->tool != NONE)
+				*tool = icon->tool;
+			state = CLICKED;
+		}
+		else if(click)
+			state = CLICKED;
+		else
+			state = HOVERED;
+		
+		if(clicked)
+			result = 1;
+	}
+	update_icon(renderer, icon, state);
+	return result;
+}
+
+int update_buttons(SDL_Renderer * renderer, SDL_Point * pos, enum tool * tool, int click, int clicked){
+	// Returns 1 if save is needed
+	update_button(renderer, pos, &pen, tool, click, clicked);
+	update_button(renderer, pos, &bucket, tool, click, clicked);
+	update_button(renderer, pos, &pipette, tool, click, clicked);
+	int result = update_button(renderer, pos, &saving, tool, click, clicked);
+	return result;
 }
