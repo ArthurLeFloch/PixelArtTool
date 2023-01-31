@@ -32,6 +32,6 @@ void render_icons(SDL_Renderer * renderer, enum tool tool);
 
 void free_assets();
 
-void set_selected_tool(SDL_Point * pos, enum tool * tool);
+int handle_buttons(SDL_Point * pos, enum tool * tool);
 
 #endif // __RENDER_H__

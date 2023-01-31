@@ -5,7 +5,7 @@ typedef struct Icon{
 	SDL_Texture * texture;
 } Icon;
 
-Icon pen, bucket, pipette;
+Icon pen, bucket, pipette, saving;
 
 void draw_outline(SDL_Renderer * renderer, const SDL_Rect * rect, int key){
 	SDL_Rect rect1 = {rect->x - 4, rect->y - 4, rect->w + 8, rect->h + 8};
@@ -119,6 +119,11 @@ void load_assets(SDL_Renderer * renderer){
 	x = (WIDTH - P_WIDTH) - 10;
 	y = 180;
 	pipette.rect = (SDL_Rect){x, y, 60, 60};
+
+	saving.texture = load_image(renderer, "assets/save.bmp");
+	x = WIDTH - 60 - 20;
+	y = 20;
+	saving.rect = (SDL_Rect){x, y, 60, 60};
 }
 
 void fill_icon_background(SDL_Renderer * renderer, Icon * icon, int is_selected){
@@ -134,23 +139,32 @@ void fill_icon_background(SDL_Renderer * renderer, Icon * icon, int is_selected)
 void render_icons(SDL_Renderer * renderer, enum tool tool){
 	fill_icon_background(renderer, &pen, (tool == PEN));
 	SDL_RenderCopy(renderer, pen.texture, NULL, &pen.rect);
+
 	fill_icon_background(renderer, &bucket, (tool == BUCKET));
 	SDL_RenderCopy(renderer, bucket.texture, NULL, &bucket.rect);
+
 	fill_icon_background(renderer, &pipette, (tool == PIPETTE));
 	SDL_RenderCopy(renderer, pipette.texture, NULL, &pipette.rect);
+
+	fill_icon_background(renderer, &saving, 1);
+	SDL_RenderCopy(renderer, saving.texture, NULL, &saving.rect);
 }
 
 void free_assets(){
 	SDL_DestroyTexture(pen.texture);
 	SDL_DestroyTexture(bucket.texture);
 	SDL_DestroyTexture(pipette.texture);
+	SDL_DestroyTexture(saving.texture);
 }
 
-void set_selected_tool(SDL_Point * pos, enum tool * tool){
+int handle_buttons(SDL_Point * pos, enum tool * tool){
 	if(SDL_PointInRect(pos, &pen.rect))
 		*tool = PEN;
 	else if(SDL_PointInRect(pos, &bucket.rect))
 		*tool = BUCKET;
 	else if(SDL_PointInRect(pos, &pipette.rect))
 		*tool = PIPETTE;
+	else if(SDL_PointInRect(pos, &saving.rect))
+		return 1;
+	return 0;
 }

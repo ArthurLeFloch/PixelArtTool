@@ -132,10 +132,10 @@ int main(int argc, char * argv[]){
 
 	#pragma endregion
 
-	SDL_Rect palette_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200) - 10, P_WIDTH, 200};
-	SDL_Rect luminosity_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60) - 10, P_WIDTH, 40};
-	SDL_Rect primary_r = {(WIDTH - P_WIDTH) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
-	SDL_Rect secondary_r = {(WIDTH - P_WIDTH/2 + 10) - 10, (HEIGHT - 200 - 60 - 60) - 10, P_WIDTH/2 - 10, 40};
+	SDL_Rect palette_r = {(WIDTH - P_WIDTH) - 20, (HEIGHT - 200) - 20, P_WIDTH, 200};
+	SDL_Rect luminosity_r = {(WIDTH - P_WIDTH) - 20, (HEIGHT - 200 - 60) - 20, P_WIDTH, 40};
+	SDL_Rect primary_r = {(WIDTH - P_WIDTH) - 20, (HEIGHT - 200 - 60 - 60) - 20, P_WIDTH/2 - 10, 40};
+	SDL_Rect secondary_r = {(WIDTH - P_WIDTH/2 + 10) - 20, (HEIGHT - 200 - 60 - 60) - 20, P_WIDTH/2 - 10, 40};
 
 	#pragma region MAIN LOOP
 	load_assets(renderer);
@@ -179,7 +179,17 @@ int main(int argc, char * argv[]){
 							if(tool == PIPETTE)
 								primary_c = get_color_at(&mouse_pos, &pixel_art);
 						}
-						set_selected_tool(&mouse_pos, &tool);
+						int result = handle_buttons(&mouse_pos, &tool);
+						if(result == 1){
+							printf("Saving pixel art to %s...\n", destination);
+							output = fopen(destination, "w");
+							if(output == NULL){
+								perror("Error opening file");
+								exit(EXIT_FAILURE);
+							}
+							save(output, &pixel_art);
+							printf("Saved pixel art successfully !\n");
+						}
 					} else if(event.button.button == SDL_BUTTON_RIGHT){
 						if(SDL_PointInRect(&mouse_pos, &pixel_art.rect)){
 							if(tool == BUCKET)
@@ -197,15 +207,8 @@ int main(int argc, char * argv[]){
 						case SDLK_SPACE:
 							fill_image(&pixel_art, white);
 							break;
-						case SDLK_s:
-							printf("Saving pixel art to %s...\n", destination);
-							output = fopen(destination, "w");
-							if(output == NULL){
-								perror("Error opening file");
-								exit(EXIT_FAILURE);
-							}
-							save(output, &pixel_art);
-							printf("Saved pixel art successfully !\n");
+						case SDLK_w:
+							secondary_c = (SDL_Color){255, 255, 255, 255};
 							break;
 					}
 			}
