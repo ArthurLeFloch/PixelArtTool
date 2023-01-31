@@ -137,16 +137,6 @@ void load_assets(SDL_Renderer * renderer){
 	saving.tool = NONE;
 }
 
-void fill_icon_background(SDL_Renderer * renderer, Icon * icon, int is_selected){
-	SDL_Rect background = {icon->rect.x - 4, icon->rect.y - 4, icon->rect.w + 8, icon->rect.h + 8};
-	int alpha = 80;
-	if(is_selected)
-		alpha = 200;
-	draw_outline(renderer, &background, classic);
-	SDL_SetRenderDrawColor(renderer, 120, 120, 180, alpha);
-	SDL_RenderFillRect(renderer, &background);
-}
-
 void free_assets(){
 	SDL_DestroyTexture(pen.texture);
 	SDL_DestroyTexture(bucket.texture);
@@ -204,4 +194,19 @@ int update_buttons(SDL_Renderer * renderer, SDL_Point * pos, enum tool * tool, i
 	update_button(renderer, pos, &pipette, tool, click, clicked);
 	int result = update_button(renderer, pos, &saving, tool, click, clicked);
 	return result;
+}
+
+void blit_text(SDL_Renderer * renderer, TTF_Font * font, char * text, SDL_Point pos, SDL_Color color){
+    SDL_Surface * text_surface = TTF_RenderUTF8_Blended(font, text, color); 
+    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+
+    int width, height;
+    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+
+    SDL_Rect txt_rect = {pos.x, pos.y, width, height};
+
+    SDL_RenderCopy(renderer, texture, NULL, &txt_rect);
+    
+    SDL_FreeSurface(text_surface);
+    SDL_DestroyTexture(texture);
 }

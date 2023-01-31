@@ -4,6 +4,8 @@
 #include "colors.h"
 #include "pixel_art.h"
 
+#include <SDL2/SDL_ttf.h>
+
 #ifndef WIDTH
     #define WIDTH 1400
 #endif
@@ -36,5 +38,7 @@ void load_assets(SDL_Renderer * renderer);
 void free_assets();
 
 int update_buttons(SDL_Renderer * renderer, SDL_Point * pos, enum tool * tool, int click, int clicked);
+
+void blit_text(SDL_Renderer * renderer, TTF_Font * font, char * text, SDL_Point pos, SDL_Color color);
 
 #endif // __RENDER_H__

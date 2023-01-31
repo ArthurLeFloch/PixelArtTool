@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "render.h"
 #include "utils.h"
@@ -67,6 +68,9 @@ int main(int argc, char * argv[]){
 	FILE *output = NULL;
 
 	#pragma endregion
+
+	TTF_Init();
+	TTF_Font* FONT = TTF_OpenFont("fonts/MonoglycerideDemiBold.ttf", 18);
 
 	SDL_Color background_color = {20, 28, 36, 255};
 	HSV_Color selected_hs = {0, 0, 0};
@@ -146,6 +150,7 @@ int main(int argc, char * argv[]){
 
 	int running = 1;
 	while(running){
+		long int start = get_time_micro();
 		fill_background(renderer, background_color);
 
 		Uint32 mouse_state = SDL_GetMouseState(&mouseX, &mouseY);
@@ -225,17 +230,23 @@ int main(int argc, char * argv[]){
 			save(output, &pixel_art);
 			printf("Saved pixel art successfully !\n");
 		}
-		
+
 		draw_spectrum(renderer, &palette_r, selected_hs);
 		draw_selected_color_sat(renderer, &luminosity_r, selected_hs);
 		draw_selected_colors(renderer, &primary_r, primary_c, &secondary_r, secondary_c);
 		draw_pixel_art(renderer, &pixel_art);
+    
+		int fps = get_fps(start);
+		char fps_text[7];
+		sprintf(fps_text, "%d", fps);
+
+		blit_text(renderer, FONT, fps_text, (SDL_Point){20, 20}, white);
 		
 		SDL_RenderPresent(renderer);
 		click = 0;
 		clicked_up = 0;
 	}
-
+	
 	status = EXIT_SUCCESS;
 	#pragma endregion
 

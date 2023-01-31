@@ -13,7 +13,7 @@ all: project
 
 project: $(OTHERS)
 	gcc $(OPT) -c src/main.c $(sdl2-config --cflags --libs)
-	gcc $(CFLAGS) -o project $(OTHERS) main.o -lSDL2 -lm
+	gcc $(CFLAGS) -o project $(OTHERS) main.o -lSDL2 -lSDL2_ttf -lm
 
 clean:
 	rm -f project

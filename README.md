@@ -7,6 +7,10 @@ Pixel Art Tool
   $ sudo apt-get install libsdl2-dev
   ```
 
+  ```
+  $ sudo apt-get install libsdl2-ttf-dev
+  ```
+
 ## Options
 1) `-s <width>x<height>` allows to choose the image size
 2) `-f <path>` allows to choose a source file (which needs to use the ppm format)
