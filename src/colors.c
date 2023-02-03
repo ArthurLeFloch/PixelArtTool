@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void min_and_max (SDL_Color color, int *min, int *max) {
+void min_and_max(SDL_Color color, int *min, int *max) {
 	int r = color.r / 255.0, g = color.g, b = color.b;
 
 	if (r <= g && r <= b)
@@ -22,7 +22,7 @@ void min_and_max (SDL_Color color, int *min, int *max) {
 		*max = b;
 }
 
-SDL_Color hsv_to_rgb (HSV_Color hsv) {
+SDL_Color hsv_to_rgb(HSV_Color hsv) {
 	float h = hsv.h;
 	float s = hsv.s;
 	float v = hsv.v;
@@ -34,7 +34,7 @@ SDL_Color hsv_to_rgb (HSV_Color hsv) {
 		return (SDL_Color){ R, G, B, 255 };
 	}
 	h *= 6;
-	i = floor (h);
+	i = floor(h);
 	f = h - i;
 	p = v * (1 - s);
 	q = v * (1 - s * f);
@@ -74,12 +74,12 @@ SDL_Color hsv_to_rgb (HSV_Color hsv) {
 	return (SDL_Color){ R, G, B, 255 };
 }
 
-HSV_Color rgb_to_hsv (SDL_Color color) {
+HSV_Color rgb_to_hsv(SDL_Color color) {
 	float r		= color.r / 255.0;
 	float g		= color.g / 255.0;
 	float b		= color.b / 255.0;
-	float cmax	= fmax (r, fmax (g, b));
-	float cmin	= fmin (r, fmin (g, b));
+	float cmax	= fmax(r, fmax(g, b));
+	float cmin	= fmin(r, fmin(g, b));
 	float delta = cmax - cmin;
 
 	float H, S, V;
@@ -105,10 +105,10 @@ HSV_Color rgb_to_hsv (SDL_Color color) {
 	return (HSV_Color){ H, S, V };
 }
 
-void print_hsv (HSV_Color color) { printf ("Hue : %f \tSaturation : %f \tValue : %f\n", color.h, color.s, color.v); }
+void print_hsv(HSV_Color color) { printf("Hue : %f \tSaturation : %f \tValue : %f\n", color.h, color.s, color.v); }
 
-void print_rgb (SDL_Color color) { printf ("Red : %d \tGreen : %d \tBlue : %d\n", color.r, color.g, color.b); }
+void print_rgb(SDL_Color color) { printf("Red : %d \tGreen : %d \tBlue : %d\n", color.r, color.g, color.b); }
 
-int are_color_equal (SDL_Color color1, SDL_Color color2) {
+int are_color_equal(SDL_Color color1, SDL_Color color2) {
 	return (color1.r == color2.r) && (color1.g == color2.g) && (color1.b == color2.b) && (color1.a == color2.a);
 }
